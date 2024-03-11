@@ -22,6 +22,14 @@ steps:
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "gcr.io/$PROJECT_ID/app:$COMMIT_SHA"]
 
+  # Tag latest Docker image to Google Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["tag", "gcr.io/$PROJECT_ID/app:$COMMIT_SHA", "gcr.io/$PROJECT_ID/app:latest"]
+
+  # Push latest Docker image to Google Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/app:latest"]
+
   # Deploy app to GKE and use latest image
   - name: "gcr.io/cloud-builders/gke-deploy"
     args:

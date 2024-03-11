@@ -34,7 +34,7 @@ spec:
         app: app
     spec:
       containers:
-        - image: gcr.io/jpoehnelt-cohere-assignment/app:latest
+        - image: gcr.io/jpoehnelt-cohere/app:latest
           imagePullPolicy: IfNotPresent
           name: app
           ports:
