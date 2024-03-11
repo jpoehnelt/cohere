@@ -1,0 +1,125 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: initdb-config
+data:
+  quotes.sql: |
+    CREATE TABLE IF NOT EXISTS quotes (
+        id SERIAL PRIMARY KEY,
+        quote_text TEXT NOT NULL,
+        author TEXT NOT NULL
+    );
+    
+    DELETE FROM quotes;
+
+    INSERT INTO
+        quotes (quote_text, author)
+    VALUES
+    (
+        'To live is the rarest thing in the world. Most people exist, that is all.',
+        'Oscar Wilde'
+    ),
+    (
+        'That it will never come again is what makes life so sweet.',
+        'Emily Dickinson'
+    ),
+    (
+        'It is never too late to be what you might have been.',
+        'George Eliot'
+    ),
+    (
+        'To be yourself in a world that is constantly trying to make you something else is the greatest accomplishment.',
+        'Ralph Waldo Emerson'
+    ),
+    (
+        'Pain is inevitable. Suffering is optional.',
+        'Haruki Murakami'
+    ),
+    (
+        'Be kind, for everyone you meet is fighting a hard battle.',
+        'Plato'
+    ),
+    (
+        'Unable are the loved to die for love is immortality.',
+        'Emily Dickinson'
+    ),
+    (
+        'Let me live, love, and say it well in good sentences.',
+        'Sylvia Plath'
+    ),
+    (
+        'Appreciation is a wonderful thing. It makes what is excellent in others belong to us as well.',
+        'Voltaire'
+    ),
+    (
+        'Life is tough my darling, but so are you.',
+        'Stephanie Bennett Henry'
+    ),
+    (
+        'Self-awareness and self-love matter. Who we are is how we lead.',
+        'Brene Brown'
+    ),
+    (
+        'Amateurs sit and wait for inspiration, the rest of us just get up and go to work.',
+        'Stephen King'
+    );
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  serviceName: postgres-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:latest
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_DB
+              value: db
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data                           
+            - name: initdb-config
+              mountPath: /docker-entrypoint-initdb.d/quotes.sql
+              subPath: quotes.sql
+      volumes:
+        - name: initdb-config
+          configMap:
+            name: initdb-config
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
