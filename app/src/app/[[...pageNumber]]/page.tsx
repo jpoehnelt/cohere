@@ -27,7 +27,6 @@ export default async function Page({
   params: { pageNumber: string };
 }) {
   const pageNumber = parseInt(params.pageNumber ?? "0");
-  console.log(pageNumber)
   const quotes = await getQuotes(pageNumber);
   const quoteCount = await getQuoteCount();
 
